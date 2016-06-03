@@ -1,8 +1,25 @@
 let s:install_path=expand("<sfile>:p:h")
 
+
 function! IsSyntaxRuby()
   let syntax = synIDattr(synID(line("'<"),col("'<"),1),"name")
   return match(syntax, "ruby")
+endfunction
+
+function GetTemplate(filetype)
+  let erb = ["<%= t('", "') %>"]
+  let default = ["t('", "')"]
+  let mapping = {
+    'eruby': erb,
+    'eruby.html': erb,
+    'slim': default,
+    'haml': default,
+    'emblem': ["#{t('", "')}"],
+    'javascript': default,
+    'coffee': default,
+    'html.handlebars': ["{{t('", "')}}"],
+  }
+  return get(mapping, filetype, default)
 endfunction
 
 function! I18nTranslateString()
@@ -11,21 +28,25 @@ function! I18nTranslateString()
   let text = s:removeQuotes(s:strip(@x))
   let variables = s:findInterpolatedVariables(text)
   let key = s:askForI18nKey()
+  let template = GetTemplate(&filetype)
   if &filetype == 'eruby' || &filetype == 'eruby.html' || &filetype == 'slim' || &filetype == 'haml'
     let fullKey = s:determineFullKey(key)
     if IsSyntaxRuby() != -1
-      let @x = s:generateI18nCall(key, variables, "t('", "')")
+      let @x = s:generateI18nCall(key, variables, template[0], template[1])
     else
-      let @x = s:generateI18nCall(key, variables, "<%= t('", "') %>")
+      let @x = s:generateI18nCall(key, variables, template[0], template[1])
     endif
     call s:addStringToYamlStore(text, fullKey)
   else
-    let @x = s:generateI18nCall(key, variables, "t('", "')")
+    let @x = s:generateI18nCall(key, variables, template[0], template[1])
     call s:addStringToYamlStore(text, key)
   endif
   " replace selection
   normal gv"xp
 endfunction
+
+
+
 
 function! I18nDisplayTranslation()
   normal gv"ay
