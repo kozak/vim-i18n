@@ -6,21 +6,13 @@ function! IsSyntaxRuby()
   return match(syntax, "ruby")
 endfunction
 
-function GetTemplate(filetype)
+function! GetTemplate(filetype)
   let erb = ["<%= t('", "') %>"]
   let default = ["t('", "')"]
-  let mapping = {
-    'eruby': erb,
-    'eruby.html': erb,
-    'slim': default,
-    'haml': default,
-    'emblem': ["#{t('", "')}"],
-    'javascript': default,
-    'coffee': default,
-    'html.handlebars': ["{{t('", "')}}"],
-  }
-  return get(mapping, filetype, default)
+  let mapping = {'eruby': erb, 'eruby.html': erb, 'slim': default, 'haml': default, 'emblem': ["#{t('", "')}"], 'javascript': default, 'coffee': default, 'html.handlebars': ["{{t('", "')}}"],}
+  return get(mapping, a:filetype, default)
 endfunction
+
 
 function! I18nTranslateString()
   " copy last visual selection to x register
