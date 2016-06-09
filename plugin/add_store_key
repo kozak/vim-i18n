@@ -93,14 +93,22 @@ class AddKey
   end
 end
 
+
 file = ARGV[0]
 key = ARGV[1]
 value = ARGV[2]
 
 is_json = File.extname(file) == "json"
-locale = File.basename(file, ".yml")[/[^\.]+$/]
+locale = File.basename(file, File.extname(file))[/[^\.]+$/]
+
+if is_json
+  empty_content = JSON.generate({:locale => locale})
+else
+  empty_content = "#{locale}:"
+end
+
 file = File.expand_path(file)
-file_content = File.exists?(file) ? File.read(file) : "#{locale}:"
+file_content = File.exists?(file) ? File.read(file) : empty_content
 
 if is_json
   reader = JsonReader.new
