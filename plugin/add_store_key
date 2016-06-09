@@ -98,7 +98,7 @@ file = ARGV[0]
 key = ARGV[1]
 value = ARGV[2]
 
-is_json = File.extname(file) == "json"
+is_json = File.extname(file) == ".json"
 locale = File.basename(file, File.extname(file))[/[^\.]+$/]
 
 if is_json
