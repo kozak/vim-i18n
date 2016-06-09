@@ -28,10 +28,10 @@ function! I18nTranslateString()
     else
       let @x = s:generateI18nCall(key, variables, template[0], template[1])
     endif
-    call s:addStringToYamlStore(text, fullKey)
+    call s:addStringToStore(text, fullKey)
   else
     let @x = s:generateI18nCall(key, variables, template[0], template[1])
-    call s:addStringToYamlStore(text, key)
+    call s:addStringToStore(text, key)
   endif
   " replace selection
   normal gv"xp
@@ -42,7 +42,7 @@ endfunction
 
 function! I18nDisplayTranslation()
   normal gv"ay
-  ruby get_translation(Vim.evaluate('@a'), Vim.evaluate('s:askForYamlPath()'))
+  ruby get_translation(Vim.evaluate('@a'), Vim.evaluate('s:askForPath()'))
 endfunction
 
 ruby << EOF
