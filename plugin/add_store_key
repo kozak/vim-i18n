@@ -46,7 +46,7 @@ end
 
 class JsonWriter
   def call(hash)
-    JSON.generate(hash)
+    JSON.pretty_generate(hash)
   end
 end
 
