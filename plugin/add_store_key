@@ -102,7 +102,7 @@ is_json = File.extname(file) == ".json"
 locale = File.basename(file, File.extname(file))[/[^\.]+$/]
 
 if is_json
-  empty_content = JSON.generate({:locale => locale})
+  empty_content = JSON.generate({locale.to_sym => {}})
 else
   empty_content = "#{locale}:"
 end
