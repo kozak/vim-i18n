@@ -47,17 +47,23 @@ endfunction
 
 ruby << EOF
 require 'yaml'
+require 'json'
 
 def get_translation(translation_key, file_name)
-  locale = file_name.match(/(?<locale>\w+[-_]?\w+)\.yml$/)[:locale]
-  translations_hash = load_yaml(file_name)
+  locale = file_name.match(/(?<locale>\w+[-_]?\w+)\.(yml|json)$/)[:locale]
+  translations_hash = load_store(file_name)
   translation = get_deep_value_for(translations_hash, "#{locale}.#{translation_key}")
   print translation || "Sorry, there's no translation for the key: '#{translation_key}', with locale: '#{locale}'"
 end
 
-def load_yaml(file_name)
+def load_store(file_name)
+  is_json = file_name.matches(/\.json/)
   begin
-    YAML.load(File.open(file_name))
+    if is_json
+      JSON.parse(File.read(file_name))
+    else
+      YAML.load(File.open(file_name))
+    end
   rescue
     raise "There's a problem with parsing translations from the file: #{file_name}"
   end
@@ -131,21 +137,21 @@ function! s:determineFullKey(key)
   end
 endfunction
 
-function! s:addStringToYamlStore(text, key)
-  let yaml_path = s:askForYamlPath()
+function! s:addStringToStore(text, key)
+  let store_path = s:askForPath()
   let escaped_text = shellescape(a:text)
-  let cmd = s:install_path . "/add_yaml_key '" . yaml_path . "' '" . a:key . "' " . escaped_text
+  let cmd = s:install_path . "/add_store_key '" . store_path . "' '" . a:key . "' " . escaped_text
   call system(cmd)
 endfunction
 
-function! s:askForYamlPath()
+function! s:askForPath()
   call inputsave()
   let path = ""
-  if exists('g:I18nYamlPath')
-    let path = g:I18nYamlPath
+  if exists('g:I18nStorePath')
+    let path = g:I18nStorePath
   else
-    let path = input('YAML store: ', 'config/locales/en.yml', 'file')
-    let g:I18nYamlPath = path
+    let path = input('Yaml/JSON store: ', 'config/locales/en.yml', 'file')
+    let g:I18nStorePath = path
   endif
   call inputrestore()
   return path

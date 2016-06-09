@@ -2,6 +2,7 @@
 # vim: ft=ruby:
 
 require "yaml"
+require 'json'
 
 class Hash
   def sort_by_key(recursive=false, &block)
@@ -15,17 +16,54 @@ class Hash
   end
 end
 
-class YAMLator
-  attr_reader :hash
+class YamlReader
+  def call(data)
+    YAML.load(data)
+  end
+end
+
+class YamlWriter
   attr_reader :data
 
   def initialize(data)
-    @data, @hash = data, YAML.load(data)
+    @data = data
   end
 
-  def to_yaml
+  def preamble
+    data[/\A(\s*(#.*?)?\n)+/]
+  end
+
+  def call(hash)
+    [preamble, hash.to_yaml].join
+  end
+end
+
+class JsonLoader
+  def call(data)
+    JSON.parse(data)
+  end
+end
+
+class JsonWriter
+  def call(hash)
+    JSON.generate(hash)
+  end
+end
+
+class AddKey
+  attr_reader :hash
+  attr_reader :data
+  attr_reader :writer
+
+  def initialize(data, reader, writer)
+    @data = data
+    @writer = writer
+    @hash = reader.call(data)
+  end
+
+  def to_s
     sorted_hash = hash.sort_by_key(true) { |x, y| x.to_s <=> y.to_s }
-    [preamble, sorted_hash.to_yaml].join
+    writer.call(sorted_hash)
   end
 
   def []=(key, value)
@@ -59,11 +97,21 @@ file = ARGV[0]
 key = ARGV[1]
 value = ARGV[2]
 
+is_json = File.extname(file) == "json"
 locale = File.basename(file, ".yml")[/[^\.]+$/]
 file = File.expand_path(file)
 file_content = File.exists?(file) ? File.read(file) : "#{locale}:"
-yamlator = YAMLator.new(file_content)
-yamlator[yamlator.hash.keys.first + "." + key] = value
 
-File.open(file, 'w') { |f| f.write yamlator.to_yaml }
+if is_json
+  reader = JsonReader.new
+  writer = JsonWriter.new
+else
+  reader = YamlReader.new
+  writer = YamlWriter.new(file_content)
+end
+
+add_key = AddKey.new(file_content, reader, writer)
+add_key[add_key.hash.keys.first + "." + key] = value
+
+File.open(file, 'w') { |f| f.write add_key.to_s }
 
