@@ -9,7 +9,7 @@ endfunction
 function! GetTemplate(filetype)
   let erb = ["<%= t('", "') %>"]
   let default = ["t('", "')"]
-  let mapping = {'eruby': erb, 'eruby.html': erb, 'slim': default, 'haml': default, 'emblem': ["#{t('", "')}"], 'javascript': default, 'coffee': default, 'html.handlebars': ["{{t('", "')}}"],}
+  let mapping = {'eruby': erb, 'eruby.html': erb, 'slim': default, 'haml': default, 'emblem': ["#{t '", "'}"], 'javascript': default, 'coffee': default, 'html.handlebars': ["{{t('", "')}}"],}
   return get(mapping, a:filetype, default)
 endfunction
 
