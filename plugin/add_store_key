@@ -38,7 +38,7 @@ class YamlWriter
   end
 end
 
-class JsonLoader
+class JsonReader
   def call(data)
     JSON.parse(data)
   end
